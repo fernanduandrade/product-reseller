@@ -6,9 +6,16 @@ export interface Employee {
 }
 
 export interface Sale {
-  employeeName?: string;
   productName: string;
-  dateSale: Date;
+  dateSale: string;
+  employeeCode: string;
+  totalPrice: number;
+  quantity: number
+}
+
+export interface Sale {
+  productName: string;
+  dateSale: string;
   employeeCode: string;
   totalPrice: number;
   quantity: number
