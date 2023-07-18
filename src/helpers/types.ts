@@ -13,10 +13,8 @@ export interface Sale {
   quantity: number
 }
 
-export interface Sale {
-  productName: string;
-  dateSale: string;
-  employeeCode: string;
-  totalPrice: number;
-  quantity: number
+export interface SaleMessage {
+  queueId: string, 
+  sale: Sale;
 }
+

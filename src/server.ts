@@ -6,24 +6,10 @@ import os from 'os'
 import parse from 'csv-parse'
 import { Employee, Sale } from '@/helpers/types'
 import { v4 as uuidv4 } from 'uuid';
-import amqlib, { Channel, Connection } from  'amqplib'
-
+import workerManager from './queue/workerManager'
+import amqpManager from './queue/queueManager'
+workerManager.init()
 const parser = parse.parse
-let channel: Channel, connection: Connection
-connect()
-
-async function connect() {
-  try {
-    const amqServer = 'amqp://localhost:5672'
-    connection = await amqlib.connect(amqServer)
-    channel = await connection.createChannel()
-
-    await channel.assertQueue('sales')
-    
-  } catch (err) {
-    console.log(err)
-  }
-}
 
 const upload = multer({ dest: os.tmpdir() })
 
@@ -32,6 +18,7 @@ const prisma = new PrismaClient()
 const app: Express = express()
 const port = 3009
 app.use(express.json())
+app.use(express.urlencoded({ extended: true }))
 app.get('/', (req: Request, res: Response) => {
   res.send('online')
 })
@@ -75,6 +62,7 @@ app.post('/read-sales', upload.single('file'), (req: Request, res: Response) => 
       }
       const recordsLength = records.length - 1
       const sales: Sale[] = []
+      const queueId = uuidv4()
       for(let i = 1; i < recordsLength; i++)
       {
         const sale: Sale = {
@@ -85,10 +73,13 @@ app.post('/read-sales', upload.single('file'), (req: Request, res: Response) => 
           quantity: parseInt(records[i][4], 10),
         }
         sales.push(sale)
-        channel.sendToQueue('sales', Buffer.from(JSON.stringify(sale),))
+        const message = { queueId, sale }
+        amqpManager.connect().then((channel: any) => {
+          amqpManager.sendMessageToQueue(channel, 'sales', message)
+        })
       }
       
-      return res.status(201).json({ requestId: uuidv4(), data: sales })
+      return res.status(201).json({ requestId: queueId, data: sales })
     })
   } catch (err: any) {
     res.status(400).json({ message: err.message })
