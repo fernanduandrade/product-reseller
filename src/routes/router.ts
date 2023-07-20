@@ -1,12 +1,11 @@
-import { Express, Request, Response } from "express"
+import { Express } from "express"
 import EmployeeRoutes from '../controllers/employee.controller'
+import SaleRoutes from '../controllers/sale.controller'
 
 const routerSetup = (app: Express) => {
   app
-  .get('/', async (req: Request, res: Response) => {
-    res.send('Hello Express APIvantage!');
-  })
   .use('/api/employees', EmployeeRoutes)
+  .use('/api/sales', SaleRoutes)
 }
 
 export default routerSetup

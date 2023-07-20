@@ -10,7 +10,7 @@ export interface Sale {
   dateSale: string;
   employeeCode: string;
   totalPrice: number;
-  quantity: number
+  quantity: number;
 }
 
 export interface SaleMessage {
