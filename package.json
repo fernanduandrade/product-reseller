@@ -18,7 +18,9 @@
   "license": "ISC",
   "dependencies": {
     "@prisma/client": "^5.0.0",
+    "@types/axios": "^0.14.0",
     "amqplib": "^0.10.3",
+    "axios": "^1.4.0",
     "cors": "^2.8.5",
     "csv-parse": "^5.4.0",
     "dotenv": "^16.3.1",

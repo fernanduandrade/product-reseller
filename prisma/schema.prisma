@@ -24,3 +24,21 @@ model Sales {
   employee Employee @relation(fields: [employeeId], references: [id])
   employeeId String
 }
+
+model Queue {
+  id String @id @default(uuid())
+  dateCreated DateTime @default(now())
+  queueId String
+  totalMessages Int
+  status QueueStatus @relation(fields: [statusId], references: [id])
+  statusId Int
+
+}
+
+model QueueStatus {
+  id Int @id @default(autoincrement())
+  statusName String
+  statusDescription String
+  queue Queue[]
+}
+
