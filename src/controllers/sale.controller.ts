@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { PrismaClient } from "@prisma/client";
-import { Sale } from "@/helpers/types";
+import { Sale, Queue, QueueStatus } from "../helpers/types";
 import { getRemainingMessages } from "../services/rabbit.service";
 import multer from "multer";
 import os from "os";
@@ -58,12 +58,31 @@ router
         id: queueProgress?.statusId,
       },
     });
+    let status = statusMessage?.id
+    if(queueProgress !== null) {
+      if(messagesLeft === 0 && statusMessage!.statusName === 'IN PROGRESS') {
+        const diff = {
+          dateCreated: queueProgress.dateCreated,
+          queueId: queueProgress?.queueId,
+          statusId: QueueStatus.FINISHED,
+          totalMessages: queueProgress.totalMessages,
+          id: queueProgress.id
+        }
+
+        status = QueueStatus.FINISHED
+        await prisma.queue.update({
+          where: {id: queueProgress.id },
+          data : diff
+        })
+      }
+    }
+
     return res
       .status(200)
       .send({
         queueId: queueProgress?.id,
         messagesToProcess: messagesLeft,
-        progressStatus: statusMessage?.statusName,
+        progressStatus: QueueStatus[status!],
         totalMessages: queueProgress?.totalMessages
       });
   })

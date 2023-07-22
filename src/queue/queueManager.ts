@@ -32,7 +32,6 @@ export default {
   },
   consumeFromQueue(channel: Channel, queueName: string, callback: Function) {
     channel.assertQueue(queueName, { durable: false });
-    channel.prefetch(1);
     channel.consume(
       queueName,
       function (message) {

@@ -18,3 +18,18 @@ export interface SaleMessage {
   sale: Sale;
 }
 
+
+export interface Queue {
+  id: string;
+  dateCreated: Date;
+  queueId: string;
+  totalMessages: number;
+  statusId: QueueStatus
+
+}
+
+export enum QueueStatus {
+  IN_PROGRESS = 1,
+  FINISHED = 2,
+  ERROR_WHILE_PROCESSING_THE_MESSAGES = 3
+}
