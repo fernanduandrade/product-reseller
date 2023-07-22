@@ -6,18 +6,24 @@ export default {
     return new Promise((resolve, reject) => {
       amqp.connect("amqp://localhost", (err, conn) => {
         if (err) {
-          reject(err);
+          this.retryConnection()
+        } else {
+          conn.createChannel((error, channel) => {
+            if (error) {
+              reject(error);
+            } else {
+              resolve(channel);
+            }
+
+          });
         }
 
-        conn.createChannel((error, channel) => {
-          if (error) {
-            reject(error);
-          }
-
-          resolve(channel);
-        });
+        
       });
     });
+  },
+  retryConnection() {
+    setTimeout(() => this.connect(), 10000)
   },
   sendMessageToQueue(channel: Channel, queueName: string, message: object) {
     channel.assertQueue(queueName, { durable: false });
