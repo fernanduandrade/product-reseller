@@ -27,8 +27,14 @@ export default {
   },
   sendMessageToQueue(channel: Channel, queueName: string, message: object) {
     channel.assertQueue(queueName, { durable: false });
-
     channel.sendToQueue(queueName, Buffer.from(JSON.stringify(message)));
+  },
+  sendMessageListToQueue<T>(channel: Channel, queueName: string, messageId: string, list: Array<T>) {
+    channel.assertQueue(queueName, { durable: false })
+    list.forEach(data => {
+      const message = { messageId, data }
+      channel.sendToQueue(queueName, Buffer.from(JSON.stringify(message)))
+    })
   },
   consumeFromQueue(channel: Channel, queueName: string, callback: Function) {
     channel.assertQueue(queueName, { durable: false });

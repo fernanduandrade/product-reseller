@@ -11,13 +11,15 @@ export default {
   async messageReceivedEvent (message: string) {
     if(message !== null) {
       const payload: SaleMessage = JSON.parse(message)
-      const sale = await prisma.sales.create({
+      console.log(payload)
+      console.log(payload.data)
+      await prisma.sales.create({
         data: {
-          employeeId: payload.sale.employeeCode,
-          productName: payload.sale.productName,
-          totalPrice: payload.sale.totalPrice,
-          quantity: payload.sale.quantity,
-          dateSale: new Date(payload.sale.dateSale).toISOString(),
+          employeeId: payload.data.employeeCode,
+          productName: payload.data.productName,
+          totalPrice: payload.data.totalPrice,
+          quantity: payload.data.quantity,
+          dateSale: new Date(payload.data.dateSale).toISOString(),
         },
       })
     }

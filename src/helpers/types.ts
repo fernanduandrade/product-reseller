@@ -15,7 +15,7 @@ export interface Sale {
 
 export interface SaleMessage {
   queueId: string, 
-  sale: Sale;
+  data: Sale;
 }
 
 

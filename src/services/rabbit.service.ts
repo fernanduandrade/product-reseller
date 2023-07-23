@@ -5,11 +5,11 @@ interface MessagesResponse {
 }
 
 interface Message {
-  queueId: string;
+  messageId: string;
   sale: any
 }
 
-export const getRemainingMessages = async (queueName: string, requestId: string) => {
+export const getRemainingMessages = async (queueName: string, queueId: string) => {
   const uri = `http://localhost:15672/api/queues/%2F/${queueName}/get`
   const response = await axios.post(uri, {
     count: 10000,
@@ -21,7 +21,7 @@ export const getRemainingMessages = async (queueName: string, requestId: string)
   const messages: MessagesResponse[] = response.data
   const messagesLeft = messages.filter(message => {
     const parsedMessage: Message = JSON.parse(message.payload)
-    if(parsedMessage.queueId === requestId)
+    if(parsedMessage.messageId === queueId)
       return message
   })
 

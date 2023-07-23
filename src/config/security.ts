@@ -3,8 +3,6 @@ import { Express } from 'express'
 import helmet from 'helmet'
 import morgan from 'morgan'
 
-console.log(process.env.SERVER_PORT)
-
 const securitySetup = (app: Express, express: any) => {
   if(process.env.ENVIROMENMENT === 'DEVELOPMENT')
     app.use(morgan('dev'))
