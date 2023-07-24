@@ -1,12 +1,14 @@
 import { Express } from "express"
-import EmployeeRoutes from '../controllers/employee.controller'
-import SaleRoutes from '../controllers/sale.controller'
+import EmployeeController from '../controllers/employee.controller'
+import SaleController from '../controllers/sale.controller'
 import { notFoundRouter } from "../middleware/notFoundRouteMiddleware"
- 
+import errorHandler from "../middleware/errorHandlerMiddleware"
+
 const routerSetup = (app: Express) => {
   app
-  .use('/api/v1/employees', EmployeeRoutes)
-  .use('/api/v1/sales', SaleRoutes)
+  .use('/api/v1/employees', EmployeeController)
+  .use('/api/v1/sales', SaleController)
+  .use(errorHandler)
   .all('*', notFoundRouter)
 }
 

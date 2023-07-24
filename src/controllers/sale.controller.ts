@@ -1,4 +1,4 @@
-import { Router } from 'express'
+import { Router, Request, Response, NextFunction } from 'express'
 import { PrismaClient } from '@prisma/client'
 import { Sale, QueueStatus } from '../helpers/types'
 import { getRemainingMessages } from '../services/rabbit.service'
@@ -8,12 +8,20 @@ import fs from 'fs'
 import amqpManager from '../queue/queueManager'
 import { v4 as uuidv4 } from 'uuid'
 import { getSalesFromCsv } from '../helpers/csv'
+import tryCatch from '../helpers/catchAsync'
 
 const prisma = new PrismaClient();
 const { sales } = prisma;
 
 const upload = multer({ dest: os.tmpdir() })
 const router = Router()
+
+const catchAsync = (fn: Function) => {
+  return (req: Request, res: Response, next: NextFunction) => {
+    fn(req, res, next).catch(next);
+  }
+};
+
 
 router
   .get('/', async (req, res) => {
@@ -42,48 +50,48 @@ router
 
     return res.status(200).json(data)
   })
-  .get('/queue/status', async (req, res) => {
+  .get('/queue/status', tryCatch(async (req: Request, res: Response) => {
     const queueId = req.query.queueId
-    const messagesLeft = await getRemainingMessages('sales', queueId as string);
-    const queueProgress = await prisma.queue.findFirst({
-      where: {
-        queueId: queueId as string,
-      },
-    });
-
-    const statusMessage = await prisma.queueStatus.findFirst({
-      where: {
-        id: queueProgress?.statusId,
-      },
-    });
-    let status = statusMessage?.id
-    if(queueProgress !== null) {
-      if(messagesLeft === 0 && statusMessage!.statusName === 'IN PROGRESS') {
-        const diff = {
-          dateCreated: queueProgress.dateCreated,
-          queueId: queueProgress?.queueId,
-          statusId: QueueStatus.FINISHED,
-          totalMessages: queueProgress.totalMessages,
-          id: queueProgress.id
-        }
-
-        status = QueueStatus.FINISHED
-        await prisma.queue.update({
-          where: {id: queueProgress.id },
-          data : diff
-        })
-      }
-    }
-
-    return res
-      .status(200)
-      .send({
-        queueId: queueProgress?.id,
-        messagesToProcess: messagesLeft,
-        progressStatus: QueueStatus[status!],
-        totalMessages: queueProgress?.totalMessages
+      const messagesLeft = await getRemainingMessages('sales', queueId as string);
+      const queueProgress = await prisma.queue.findFirst({
+        where: {
+          queueId: queueId as string,
+        },
       });
-  })
+
+      const statusMessage = await prisma.queueStatus.findFirst({
+        where: {
+          id: queueProgress?.statusId,
+        },
+      });
+      let status = statusMessage?.id
+      if(queueProgress !== null) {
+        if(messagesLeft === 0 && statusMessage!.statusName === 'IN PROGRESS') {
+          const diff = {
+            dateCreated: queueProgress.dateCreated,
+            queueId: queueProgress?.queueId,
+            statusId: QueueStatus.FINISHED,
+            totalMessages: queueProgress.totalMessages,
+            id: queueProgress.id
+          }
+
+          status = QueueStatus.FINISHED
+          await prisma.queue.update({
+            where: {id: queueProgress.id },
+            data : diff
+          })
+        }
+      }
+
+      return res
+        .status(200)
+        .send({
+          queueId: queueProgress?.id,
+          messagesToProcess: messagesLeft,
+          progressStatus: QueueStatus[status!],
+          totalMessages: queueProgress?.totalMessages
+        });
+  }))
   .patch('/:id', async (req, res) => {
     const { id } = req.params;
 
@@ -137,6 +145,6 @@ router
     } catch (err: any) {
       res.status(400).json({ message: err.message });
     }
-  });
+  })
 
 export default router;

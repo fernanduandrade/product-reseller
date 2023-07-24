@@ -1,14 +1,5 @@
 import axios from 'axios'
-
-interface MessagesResponse {
-  payload: string
-}
-
-interface Message {
-  messageId: string;
-  sale: any
-}
-
+import { MessagesResponse, Message } from '../helpers/types'
 export const getRemainingMessages = async (queueName: string, queueId: string) => {
   const uri = `http://localhost:15672/api/queues/%2F/${queueName}/get`
   const response = await axios.post(uri, {
@@ -20,7 +11,7 @@ export const getRemainingMessages = async (queueName: string, queueId: string) =
 
   const messages: MessagesResponse[] = response.data
   const messagesLeft = messages.filter(message => {
-    const parsedMessage: Message = JSON.parse(message.payload)
+    const parsedMessage: Omit<Message, 'sale'> = JSON.parse(message.payload)
     if(parsedMessage.messageId === queueId)
       return message
   })

@@ -33,3 +33,12 @@ export enum QueueStatus {
   FINISHED = 2,
   ERROR_WHILE_PROCESSING_THE_MESSAGES = 3
 }
+
+export interface MessagesResponse {
+  payload: string
+}
+
+export interface Message {
+  messageId: string;
+  sale: any
+}
