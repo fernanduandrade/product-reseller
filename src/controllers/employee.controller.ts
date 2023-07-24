@@ -1,6 +1,7 @@
-import { Router } from 'express'
+import { Router, Response, Request } from 'express'
 import { PrismaClient } from '@prisma/client'
 import { Employee } from '@/helpers/types'
+import tryCatch from '../helpers/handleRequest'
 
 const prisma = new PrismaClient()
 
@@ -9,12 +10,12 @@ const { employee } =  prisma
 const router = Router()
 
 router
-.get('/', async (req, res) => {
+.get('/', tryCatch(async (req: Request, res: Response) => {
   const employees = await employee.findMany()
 
   return res.status(200).json(employees)
-})
-.post('/', async (req, res) => {
+}))
+.post('/', tryCatch(async (req: Request, res: Response) => {
   const entity: Employee = req.body
 
   const newEmployee = await employee.create({
@@ -22,14 +23,14 @@ router
   })
 
   return res.status(201).json(newEmployee)
-})
-.get('/:id', async (req, res) => {
+}))
+.get('/:id', tryCatch(async (req: Request, res: Response) => {
   const { id } = req.params
   const data = await employee.findFirst({ where: { id } })
 
   return res.status(200).json(data)
-})
-.patch('/:id', async (req, res) => {
+}))
+.patch('/:id', tryCatch(async (req: Request, res: Response) => {
   const { id } = req.params
 
   if(!id)
@@ -48,12 +49,12 @@ router
   })
 
   return res.status(200).json(updatedEmployee)
-})
-.delete('/:id', async (req, res) => {
+}))
+.delete('/:id', tryCatch(async (req: Request, res: Response) => {
   const { id } = req.params
   await employee.delete({ where: { id } })
 
   return res.status(200).json({ message: 'User deleted' })
-})
+}))
 
 export default router

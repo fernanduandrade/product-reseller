@@ -8,7 +8,7 @@ import fs from 'fs'
 import amqpManager from '../queue/queueManager'
 import { v4 as uuidv4 } from 'uuid'
 import { getSalesFromCsv } from '../helpers/csv'
-import tryCatch from '../helpers/catchAsync'
+import tryCatch from '../helpers/handleRequest'
 
 const prisma = new PrismaClient();
 const { sales } = prisma;
@@ -16,20 +16,13 @@ const { sales } = prisma;
 const upload = multer({ dest: os.tmpdir() })
 const router = Router()
 
-const catchAsync = (fn: Function) => {
-  return (req: Request, res: Response, next: NextFunction) => {
-    fn(req, res, next).catch(next);
-  }
-};
-
-
 router
-  .get('/', async (req, res) => {
+  .get('/', tryCatch(async (req: Request, res: Response) => {
     const sale = await sales.findMany();
 
     return res.status(200).json(sale);
-  })
-  .post('/', async (req, res) => {
+  }))
+  .post('/', tryCatch(async (req: Request, res: Response) => {
     const sale: Sale = req.body;
 
     const newSale = await sales.create({
@@ -43,13 +36,13 @@ router
     })
 
     return res.status(201).json(newSale);
-  })
-  .get('/:id', async (req, res) => {
+  }))
+  .get('/:id', tryCatch(async (req: Request, res: Response) => {
     const { id } = req.params;
     const data = await sales.findFirst({ where: { id } });
 
     return res.status(200).json(data)
-  })
+  }))
   .get('/queue/status', tryCatch(async (req: Request, res: Response) => {
     const queueId = req.query.queueId
       const messagesLeft = await getRemainingMessages('sales', queueId as string);
@@ -92,7 +85,7 @@ router
           totalMessages: queueProgress?.totalMessages
         });
   }))
-  .patch('/:id', async (req, res) => {
+  .patch('/:id', tryCatch(async (req: Request, res: Response) => {
     const { id } = req.params;
 
     if (!id)
@@ -112,14 +105,14 @@ router
     });
 
     return res.status(200).json(updatedSale);
-  })
-  .delete('/:id', async (req, res) => {
+  }))
+  .delete('/:id', tryCatch(async (req: Request, res: Response) => {
     const { id } = req.params;
     await sales.delete({ where: { id } });
 
     return res.status(200).json({ message: 'User deleted' });
-  })
-  .post('/upload-csv', upload.single('file'), async (req, res) => {
+  }))
+  .post('/upload-csv', upload.single('file'), tryCatch(async (req: Request, res: Response) => {
     try {
       const { file } = req
       const data = fs.readFileSync(file!.path)
@@ -145,6 +138,6 @@ router
     } catch (err: any) {
       res.status(400).json({ message: err.message });
     }
-  })
+  }))
 
-export default router;
+export default router

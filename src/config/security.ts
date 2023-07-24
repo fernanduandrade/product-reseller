@@ -4,7 +4,7 @@ import helmet from 'helmet'
 import morgan from 'morgan'
 
 const securitySetup = (app: Express, express: any) => {
-  if(process.env.ENVIROMENMENT === 'DEVELOPMENT')
+  if(process.env.ENVIRONMENT === 'DEVELOPMENT')
     app.use(morgan('dev'))
   app
   .use(cors())

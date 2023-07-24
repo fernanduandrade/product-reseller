@@ -11,8 +11,6 @@ export default {
   async messageReceivedEvent (message: string) {
     if(message !== null) {
       const payload: SaleMessage = JSON.parse(message)
-      console.log(payload)
-      console.log(payload.data)
       await prisma.sales.create({
         data: {
           employeeId: payload.data.employeeCode,

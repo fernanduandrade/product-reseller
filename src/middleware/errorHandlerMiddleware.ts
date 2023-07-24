@@ -1,9 +1,13 @@
 import { Request, Response, NextFunction } from 'express'
 
 export const errorHandler = (error: any, req: Request, res: Response, next: NextFunction) => { // responding to client
-  console.log(error); 
-    // Returning the status and error message to client
-  return res.status(400).json({ messega: error.message}) 
+  return res.status(500)
+                .json({
+                  error: true,
+                  message: process.env.ENVIRONMENT === 'DEVELOPMENT'
+                    ? error.message
+                    : 'Service unavaliable'
+                }) 
 }
 
 export default errorHandler
