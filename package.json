@@ -7,7 +7,7 @@
     "start": "ts-node ./src/server.ts",
     "start:consumer": "ts-node ./consumer.ts",
     "start:prod": "npm run build && node ./dist/src/server.js",
-    "dev": "NODE_ENV=development ./node_modules/nodemon/bin/nodemon.js",
+    "dev": "NODE_ENV=production ./node_modules/nodemon/bin/nodemon.js",
     "build": "npx tsc",
     "lint": "eslint . --ext .ts",
     "postinstall": "prisma generate",
