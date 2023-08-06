@@ -7,7 +7,7 @@ import os from 'os'
 import fs from 'fs'
 import amqpManager from '../queue/queueManager'
 import { v4 as uuidv4 } from 'uuid'
-import { getSalesFromCsv } from '../helpers/csv'
+import { processCsvToSales } from '../helpers/csv'
 import tryCatch from '../helpers/handleRequest'
 
 const prisma = new PrismaClient();
@@ -116,20 +116,23 @@ router
     try {
       const { file } = req
       const data = fs.readFileSync(file!.path)
-      const sales = getSalesFromCsv(data)
-      const messagesId = uuidv4()
-      
-      amqpManager.connect().then((channel: any) => {
-        amqpManager.sendMessageListToQueue<Sale>(channel, 'sales', messagesId, sales)
-      })
+      const sales = processCsvToSales(data)
 
-      await prisma.queue.create({
-        data: {
-          queueId: messagesId,
-          totalMessages: sales.length,
-          statusId: 1,
-        },
-      });
+      const messagesId = uuidv4()
+      if(sales.length > 0) {
+        amqpManager.connect().then((channel: any) => {
+          amqpManager.sendMessageListToQueue<Sale>(channel, 'sales', messagesId, sales)
+        })
+  
+        await prisma.queue.create({
+          data: {
+            queueId: messagesId,
+            totalMessages: sales.length,
+            statusId: 1,
+          },
+        });
+      }
+      
       return res
         .status(201)
         .json({ requestId: messagesId, message: 'process has been started' });

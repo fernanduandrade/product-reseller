@@ -2,8 +2,7 @@ import csvParse from 'csv-parse'
 import { Sale } from './types'
 
 const parser = csvParse.parse
-
-export const getSalesFromCsv = (csv: Buffer) => {
+export function processCsvToSales(csv: Buffer) {
   const sales: Sale[] = []
   parser(csv, async (err: any, records: string[]) => {
     if (err) {
